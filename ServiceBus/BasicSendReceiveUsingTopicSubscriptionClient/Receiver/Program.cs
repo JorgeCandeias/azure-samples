@@ -1,0 +1,43 @@
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
+
+namespace Receiver
+{
+    public class Program
+    {
+        public static Task Main(string[] args)
+        {
+            return new HostBuilder()
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    config.AddJsonFile("appsettings.json");
+                    config.AddEnvironmentVariables();
+                    config.AddUserSecrets<Program>();
+                })
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddConsole();
+                })
+                .ConfigureServices((context, services) =>
+                {
+                    services.Configure<ConsoleLifetimeOptions>(options =>
+                    {
+                        options.SuppressStatusMessages = true;
+                    });
+
+                    services.Configure<ReceiverOptions>(options =>
+                    {
+                        options.ConnectionString = context.Configuration.GetConnectionString("ServiceBus");
+                        options.TopicName = context.Configuration["TopicName"];
+                        options.SubscriptionName = context.Configuration["SubscriptionName"];
+                    });
+
+                    services.AddHostedService<ReceiverHostedService>();
+                })
+                .RunConsoleAsync();
+        }
+    }
+}
