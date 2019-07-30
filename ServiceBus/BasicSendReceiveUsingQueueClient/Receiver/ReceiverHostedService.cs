@@ -42,8 +42,8 @@ namespace Receiver
         {
             var content = new Guid(message.Body);
 
-            logger.LogInformation("Received message {@Message} with sequence {@SequenceNumber} and id {@MessageId}",
-                content, message.SystemProperties.SequenceNumber, message.PartitionKey);
+            logger.LogInformation("Received message {@Message} with sequence {@SequenceNumber}",
+                content, message.SystemProperties.SequenceNumber);
 
             await client.CompleteAsync(message.SystemProperties.LockToken);
         }
